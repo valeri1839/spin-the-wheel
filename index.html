@@ -1,5 +1,5 @@
-
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,9 +7,9 @@
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      background: linear-gradient(135deg, #0d122a, #1b263b);
       color: #eee;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -19,22 +19,56 @@
     }
     h1 {
       margin: 20px 0 10px;
-      font-size: 2.5em;
+      font-size: 2.8rem;
+      font-weight: 800;
       cursor: pointer;
-      text-shadow: 0 0 8px #00f0ffaa;
+      color: #00f0ff;
+      text-shadow:
+        0 0 8px #00f0ffaa,
+        0 0 12px #00cfffbb,
+        0 0 16px #00ffffdd;
+      user-select: none;
     }
-    #canvas {
-      background: #121829;
+    #canvas-container {
+      position: relative;
+      width: 360px;
+      height: 360px;
+      margin: 0 auto;
+    }
+    canvas {
       border-radius: 50%;
-      box-shadow: 0 0 20px #00f0ffcc;
-      width: 350px;
-      height: 350px;
+      box-shadow:
+        0 0 30px #00f0ff88,
+        inset 0 0 15px #00f0ffaa;
+      display: block;
+      width: 360px !important;
+      height: 360px !important;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    #pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 28px solid #00f0ffdd;
+      filter: drop-shadow(0 0 5px #00f0ffcc);
+      z-index: 10;
+      user-select: none;
+      pointer-events: none;
     }
     #controls {
-      margin-top: 20px;
+      margin-top: 25px;
       display: flex;
-      gap: 12px;
+      gap: 14px;
       transition: opacity 0.4s ease;
+      user-select: none;
     }
     #controls.hidden {
       opacity: 0;
@@ -45,81 +79,115 @@
     button {
       background: #00f0ff;
       border: none;
-      border-radius: 6px;
-      padding: 12px 22px;
+      border-radius: 8px;
+      padding: 14px 28px;
       font-weight: 700;
       color: #000;
+      font-size: 1.2rem;
       cursor: pointer;
-      font-size: 1.1em;
+      box-shadow:
+        0 4px 8px #00b3ff88;
+      transition: background 0.3s ease;
+      user-select: none;
     }
-    canvas {
-      image-rendering: auto;
+    button:hover {
+      background: #00d4ff;
     }
   </style>
 </head>
 <body>
 
 <h1 id="title">Spin the Wheel</h1>
-<canvas id="canvas" width="350" height="350"></canvas>
+
+<div id="canvas-container">
+  <canvas id="wheel"></canvas>
+  <div id="pointer"></div>
+</div>
+
 <div id="controls" class="hidden">
   <button data-result="win">Win</button>
   <button data-result="lose">Lose</button>
   <button data-result="pet back">Pet Back</button>
 </div>
 
-<!-- Confetti -->
+<!-- Confetti lib -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
 (() => {
-  const canvas = document.getElementById('canvas');
+  const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
-  const segments = ['Win', 'Lose', 'Pet Back'];
-  const colors = ['#00e676', '#e53935', '#40c4ff'];
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-  const radius = 160;
+  const dpr = window.devicePixelRatio || 1;
+  const size = 360;
 
-  let currentAngle = 0;
-  let isSpinning = false;
+  // Setup retina canvas
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const radius = size / 2 - 10;
+
+  const segments = ['Win', 'Lose', 'Pet Back'];
+  const colors = [
+    {start: '#00ff99', end: '#008f4c'}, // green
+    {start: '#ff4c4c', end: '#a11414'}, // red
+    {start: '#4cc9ff', end: '#166ba1'}, // blue
+  ];
 
   function drawWheel(angle) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, size, size);
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(angle);
     const arc = (2 * Math.PI) / segments.length;
+
     for (let i = 0; i < segments.length; i++) {
+      const grad = ctx.createRadialGradient(0, 0, radius * 0.3, 0, 0, radius);
+      grad.addColorStop(0, colors[i].start);
+      grad.addColorStop(1, colors[i].end);
+
       ctx.beginPath();
-      ctx.fillStyle = colors[i];
+      ctx.fillStyle = grad;
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
-      ctx.lineTo(0, 0);
+      ctx.closePath();
       ctx.fill();
+
+      ctx.strokeStyle = '#00333388';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
       ctx.save();
-      ctx.rotate(i * arc + arc / 2);
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px sans-serif';
+      ctx.font = 'bold 30px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(segments[i], radius - 15, 0);
+      ctx.textBaseline = 'middle';
+      // Add subtle black outline for crisp text
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+
+      const textAngle = i * arc + arc / 2;
+      ctx.rotate(textAngle);
+
+      const text = segments[i];
+      // stroke then fill text for crisp effect
+      ctx.strokeText(text, radius - 25, 0);
+      ctx.fillText(text, radius - 25, 0);
       ctx.restore();
     }
     ctx.restore();
-
-    // pointer
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - radius - 20);
-    ctx.lineTo(centerX - 20, centerY - radius + 15);
-    ctx.lineTo(centerX + 20, centerY - radius + 15);
-    ctx.closePath();
-    ctx.fill();
   }
 
-  drawWheel(currentAngle);
+  let currentAngle = 0;
+  let isSpinning = false;
 
-  const title = document.getElementById('title');
   const controls = document.getElementById('controls');
+  const title = document.getElementById('title');
   let controlsVisible = false;
 
   title.addEventListener('click', () => {
@@ -138,10 +206,20 @@
 
     const arc = (2 * Math.PI) / segments.length;
     const index = segments.findIndex(s => s.toLowerCase() === result.toLowerCase());
-    const stopAngle = (2 * Math.PI) - (index * arc + arc / 2);
-    const rounds = 6;
-    const totalAngle = rounds * 2 * Math.PI + stopAngle;
-    const duration = 4000;
+    if (index === -1) {
+      alert("Invalid result: " + result);
+      isSpinning = false;
+      return;
+    }
+
+    const pointerAngle = 3 * Math.PI / 2; // top
+    const targetAngle = index * arc + arc / 2;
+    let stopAngle = pointerAngle - targetAngle;
+    while (stopAngle < 0) stopAngle += 2 * Math.PI;
+
+    const rounds = 7;
+    const totalRotation = rounds * 2 * Math.PI + stopAngle;
+    const duration = 4500;
     let startTime;
 
     function animate(time) {
@@ -149,14 +227,14 @@
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      currentAngle = eased * totalAngle;
+
+      currentAngle = eased * totalRotation;
       drawWheel(currentAngle);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         isSpinning = false;
-
         if (result === 'win') {
           confetti({
             particleCount: 120,
@@ -164,13 +242,13 @@
             origin: { y: 0.4 }
           });
         }
-
         alert("Result: " + result.toUpperCase());
       }
     }
-
     requestAnimationFrame(animate);
   }
+
+  drawWheel(currentAngle);
 
   controls.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -182,6 +260,7 @@
   });
 })();
 </script>
+
 </body>
 </html>
 
