@@ -19,30 +19,30 @@
     }
     h1 {
       margin: 20px 0 10px;
-      font-size: 2.8rem;
+      font-size: 3.6rem;
       font-weight: 800;
       cursor: pointer;
       color: #00f0ff;
       text-shadow:
-        0 0 8px #00f0ffaa,
-        0 0 12px #00cfffbb,
-        0 0 16px #00ffffdd;
+        0 0 10px #00f0ffaa,
+        0 0 15px #00cfffbb,
+        0 0 20px #00ffffdd;
       user-select: none;
     }
     #canvas-container {
       position: relative;
-      width: 360px;
-      height: 360px;
+      width: 600px;
+      height: 600px;
       margin: 0 auto;
     }
     canvas {
       border-radius: 50%;
       box-shadow:
-        0 0 30px #00f0ff88,
-        inset 0 0 15px #00f0ffaa;
+        0 0 40px #00f0ff88,
+        inset 0 0 20px #00f0ffaa;
       display: block;
-      width: 360px !important;
-      height: 360px !important;
+      width: 600px !important;
+      height: 600px !important;
       image-rendering: crisp-edges;
       image-rendering: pixelated;
       -webkit-font-smoothing: antialiased;
@@ -50,23 +50,23 @@
     }
     #pointer {
       position: absolute;
-      top: -20px;
+      top: -30px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-bottom: 28px solid #00f0ffdd;
-      filter: drop-shadow(0 0 5px #00f0ffcc);
+      border-left: 28px solid transparent;
+      border-right: 28px solid transparent;
+      border-bottom: 44px solid #00f0ffdd;
+      filter: drop-shadow(0 0 8px #00f0ffcc);
       z-index: 10;
       user-select: none;
       pointer-events: none;
     }
     #controls {
-      margin-top: 25px;
+      margin-top: 30px;
       display: flex;
-      gap: 14px;
+      gap: 18px;
       transition: opacity 0.4s ease;
       user-select: none;
     }
@@ -79,14 +79,14 @@
     button {
       background: #00f0ff;
       border: none;
-      border-radius: 8px;
-      padding: 14px 28px;
+      border-radius: 10px;
+      padding: 18px 36px;
       font-weight: 700;
       color: #000;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       cursor: pointer;
       box-shadow:
-        0 4px 8px #00b3ff88;
+        0 5px 12px #00b3ff88;
       transition: background 0.3s ease;
       user-select: none;
     }
@@ -110,17 +110,14 @@
   <button data-result="pet back">Pet Back</button>
 </div>
 
-<!-- Confetti lib -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
 <script>
 (() => {
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = 360;
+  const size = 600;
 
-  // Setup retina canvas
+  // Retina canvas scaling
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width = size + 'px';
@@ -130,7 +127,7 @@
 
   const centerX = size / 2;
   const centerY = size / 2;
-  const radius = size / 2 - 10;
+  const radius = size / 2 - 15;
 
   const segments = ['Win', 'Lose', 'Pet Back'];
   const colors = [
@@ -139,14 +136,18 @@
     {start: '#4cc9ff', end: '#166ba1'}, // blue
   ];
 
+  const arc = (2 * Math.PI) / segments.length;
+
   function drawWheel(angle) {
     ctx.clearRect(0, 0, size, size);
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(angle);
-    const arc = (2 * Math.PI) / segments.length;
 
     for (let i = 0; i < segments.length; i++) {
+      const startAngle = i * arc;
+      const endAngle = startAngle + arc;
+
       const grad = ctx.createRadialGradient(0, 0, radius * 0.3, 0, 0, radius);
       grad.addColorStop(0, colors[i].start);
       grad.addColorStop(1, colors[i].end);
@@ -154,30 +155,31 @@
       ctx.beginPath();
       ctx.fillStyle = grad;
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
+      ctx.arc(0, 0, radius, startAngle, endAngle);
       ctx.closePath();
       ctx.fill();
 
       ctx.strokeStyle = '#00333388';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
       ctx.stroke();
 
       ctx.save();
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 30px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+      ctx.font = 'bold 44px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 3;
       ctx.strokeStyle = 'rgba(0,0,0,0.7)';
 
-      const textAngle = i * arc + arc / 2;
+      const textAngle = startAngle + arc / 2;
       ctx.rotate(textAngle);
 
       const text = segments[i];
-      ctx.strokeText(text, radius - 25, 0);
-      ctx.fillText(text, radius - 25, 0);
+      ctx.strokeText(text, radius - 40, 0);
+      ctx.fillText(text, radius - 40, 0);
       ctx.restore();
     }
+
     ctx.restore();
   }
 
@@ -202,7 +204,6 @@
     if (isSpinning) return;
     isSpinning = true;
 
-    const arc = (2 * Math.PI) / segments.length;
     const index = segments.findIndex(s => s.toLowerCase() === result.toLowerCase());
     if (index === -1) {
       alert("Invalid result: " + result);
@@ -210,13 +211,9 @@
       return;
     }
 
-    // Pointer at top (270deg or 3π/2 rad)
     const pointerAngle = 3 * Math.PI / 2;
-
-    // Calculate the target slice's middle angle
     const sliceMiddleAngle = arc * index + arc / 2;
 
-    // Wheel rotation so slice aligns with pointer:
     let stopAngle = pointerAngle - sliceMiddleAngle;
     stopAngle = (stopAngle + 2 * Math.PI) % (2 * Math.PI);
 
@@ -263,6 +260,9 @@
   });
 })();
 </script>
+
+<!-- confetti lib -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 </body>
 </html>
