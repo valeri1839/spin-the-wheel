@@ -1,136 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Controlled Spin the Wheel</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 1em;
-    background: #f0f0f0;
-  }
-  #canvas {
-    margin: 0 auto;
-    display: block;
-    max-width: 300px;
-  }
-  .buttons {
-    margin-top: 20px;
-  }
-  button {
-    font-size: 1.2em;
-    padding: 10px 20px;
-    margin: 5px;
-    cursor: pointer;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spin the Wheel</title>
+  <style>
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2em;
+      letter-spacing: 1px;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+      background: #1e1e1e;
+      border-radius: 50%;
+      box-shadow: 0 0 20px #00f0ff;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    .buttons button {
+      background: #00f0ff;
+      border: none;
+      color: #000;
+      padding: 12px 20px;
+      margin: 8px;
+      font-size: 1em;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .buttons button:hover {
+      background: #00bcd4;
+    }
+
+    .buttons {
+      opacity: 0.05; /* Hidden unless user knows */
+    }
+
+    .buttons:hover {
+      opacity: 1;
+      transition: 0.4s ease;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Controlled Spin the Wheel</h2>
-<canvas id="canvas" width="300" height="300"></canvas>
+  <h1>🎯 Spin the Wheel</h1>
+  <canvas id="canvas" width="300" height="300"></canvas>
 
-<div class="buttons">
-  <button onclick="spinTo('win')">Spin to WIN</button>
-  <button onclick="spinTo('lose')">Spin to LOSE</button>
-  <button onclick="spinTo('pet back')">Spin to PET BACK</button>
-</div>
+  <div class="buttons">
+    <button onclick="spinTo('win')">Win</button>
+    <button onclick="spinTo('lose')">Lose</button>
+    <button onclick="spinTo('pet back')">Pet Back</button>
+  </div>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const segments = ['win', 'lose', 'pet back'];
-const colors = ['#4caf50', '#f44336', '#2196f3'];
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-const radius = 140;
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const segments = ['win', 'lose', 'pet back'];
+    const colors = ['#00e676', '#e53935', '#40c4ff'];
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 140;
 
-let currentAngle = 0;
-let isSpinning = false;
+    let currentAngle = 0;
+    let isSpinning = false;
 
-function drawWheel(angle) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(angle);
-  
-  const arcSize = (2 * Math.PI) / segments.length;
-  
-  for(let i = 0; i < segments.length; i++) {
-    ctx.beginPath();
-    ctx.fillStyle = colors[i];
-    ctx.moveTo(0,0);
-    ctx.arc(0, 0, radius, i * arcSize, (i+1) * arcSize);
-    ctx.lineTo(0,0);
-    ctx.fill();
-    
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 18px Arial';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.save();
-    ctx.rotate(i * arcSize + arcSize / 2);
-    ctx.fillText(segments[i], radius - 10, 0);
-    ctx.restore();
-  }
-  
-  ctx.beginPath();
-  ctx.fillStyle = '#fff';
-  ctx.arc(0,0,30,0,2*Math.PI);
-  ctx.fill();
-  
-  ctx.restore();
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.moveTo(centerX, centerY - radius - 10);
-  ctx.lineTo(centerX - 15, centerY - radius + 20);
-  ctx.lineTo(centerX + 15, centerY - radius + 20);
-  ctx.closePath();
-  ctx.fill();
-}
+    function drawWheel(angle) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
 
-function easeOut(t) {
-  return t * (2 - t);
-}
+      const arc = (2 * Math.PI) / segments.length;
 
-function spinTo(targetSegment) {
-  if(isSpinning) return;
-  isSpinning = true;
+      for (let i = 0; i < segments.length; i++) {
+        ctx.beginPath();
+        ctx.fillStyle = colors[i];
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
+        ctx.lineTo(0, 0);
+        ctx.fill();
 
-  const arcSize = (2 * Math.PI) / segments.length;
-  const targetIndex = segments.indexOf(targetSegment);
-  let normalizedAngle = currentAngle % (2 * Math.PI);
-  let targetAngle = (2 * Math.PI) - (targetIndex * arcSize + arcSize / 2);
-  let spins = 5;
-  let finalAngle = spins * 2 * Math.PI + targetAngle - normalizedAngle;
+        ctx.save();
+        ctx.fillStyle = '#fff';
+        ctx.rotate(i * arc + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(segments[i], radius - 10, 0);
+        ctx.restore();
+      }
 
-  let start = null;
-  const duration = 4000;
+      ctx.restore();
 
-  function animate(timestamp) {
-    if(!start) start = timestamp;
-    let elapsed = timestamp - start;
-    let progress = Math.min(elapsed / duration, 1);
-    let easedProgress = easeOut(progress);
-
-    currentAngle = normalizedAngle + easedProgress * finalAngle;
-    drawWheel(currentAngle);
-
-    if(progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      isSpinning = false;
-      alert(`Result: ${targetSegment.toUpperCase()}!`);
+      // draw pointer
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - radius - 10);
+      ctx.lineTo(centerX - 10, centerY - radius + 10);
+      ctx.lineTo(centerX + 10, centerY - radius + 10);
+      ctx.closePath();
+      ctx.fill();
     }
-  }
 
-  requestAnimationFrame(animate);
-}
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3); // smoother easing
+    }
 
-drawWheel(currentAngle);
-</script>
+    function spinTo(target) {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      const arc = (2 * Math.PI) / segments.length;
+      const index = segments.indexOf(target.toLowerCase());
+      const stopAngle = (2 * Math.PI) - (index * arc + arc / 2);
+
+      const spinCount = 5;
+      const startAngle = currentAngle % (2 * Math.PI);
+      const totalAngle = spinCount * 2 * Math.PI + stopAngle - startAngle;
+
+      let startTime = null;
+      const duration = 4000;
+
+      function animate(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const eased = easeOut(progress);
+
+        currentAngle = startAngle + totalAngle * eased;
+        drawWheel(currentAngle);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          alert(`Result: ${target.toUpperCase()}!`);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    drawWheel(currentAngle);
+  </script>
 
 </body>
 </html>
