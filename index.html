@@ -167,7 +167,6 @@
       ctx.font = 'bold 30px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      // Add subtle black outline for crisp text
       ctx.lineWidth = 3;
       ctx.strokeStyle = 'rgba(0,0,0,0.7)';
 
@@ -175,7 +174,6 @@
       ctx.rotate(textAngle);
 
       const text = segments[i];
-      // stroke then fill text for crisp effect
       ctx.strokeText(text, radius - 25, 0);
       ctx.fillText(text, radius - 25, 0);
       ctx.restore();
@@ -212,10 +210,15 @@
       return;
     }
 
-    const pointerAngle = 3 * Math.PI / 2; // top
-    const targetAngle = index * arc + arc / 2;
-    let stopAngle = pointerAngle - targetAngle;
-    while (stopAngle < 0) stopAngle += 2 * Math.PI;
+    // Pointer at top (270deg or 3π/2 rad)
+    const pointerAngle = 3 * Math.PI / 2;
+
+    // Calculate the target slice's middle angle
+    const sliceMiddleAngle = arc * index + arc / 2;
+
+    // Wheel rotation so slice aligns with pointer:
+    let stopAngle = pointerAngle - sliceMiddleAngle;
+    stopAngle = (stopAngle + 2 * Math.PI) % (2 * Math.PI);
 
     const rounds = 7;
     const totalRotation = rounds * 2 * Math.PI + stopAngle;
